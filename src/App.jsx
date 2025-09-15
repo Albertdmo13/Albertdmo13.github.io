@@ -1,35 +1,29 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-
-function App() {
-  const [count, setCount] = useState(0)
-
+import { motion } from "framer-motion";
+export default function App() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <main style={{maxWidth:960,margin:"0 auto",padding:"2rem"}}>
+      <motion.h1 initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{duration:.5}}>
+        Hi, I’m Alberto
+      </motion.h1>
+      <motion.p initial={{opacity:0}} animate={{opacity:1}} transition={{delay:.2,duration:.5}}>
+        Test1.
+      </motion.p>
 
-export default App
+      <section style={{marginTop:"2rem"}}>
+        <h2>Projects</h2>
+        <div style={{display:"grid",gap:"1rem",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))"}}>
+          {[
+            {name:"Project One", url:"https://github.com/Albertdmo13/PROJECT-1"},
+            {name:"Project Two", url:"https://github.com/Albertdmo13/PROJECT-2"},
+          ].map(p => (
+            <motion.a key={p.name} href={p.url} whileHover={{scale:1.02}} whileTap={{scale:.98}}
+              style={{border:"1px solid #222",borderRadius:12,padding:"1rem",display:"block",textDecoration:"none"}}>
+              <strong>{p.name}</strong>
+              <div style={{opacity:.7}}> Description </div>
+            </motion.a>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}
