@@ -4,6 +4,21 @@ import Carousel from "./components/Carousel";
 
 export default function App() {
   return (
+        <>
+      {/* NEW sticky, full-width top section */}
+      <section className="top-sticky">
+        <div className="top-sticky__inner">
+          <strong className="gradient-text" style={{ fontSize: "1.05rem" }}>
+            Welcome to my portfolio
+          </strong>
+
+          <div className="top-sticky__right">
+            <a className="top-sticky__pill" href="#projects-1">Section 1</a>
+            <a className="top-sticky__pill" href="#projects-2">Section 2</a>
+          </div>
+        </div>
+      </section>
+
     <main style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
 
       {/* Hero (no whileInView to avoid resize re-triggers) */}
@@ -114,5 +129,6 @@ export default function App() {
         </div>
       </motion.section>
     </main>
+    </>
   );
 }

@@ -7,9 +7,10 @@
   --primary: #3b82f6;
   --primary-700: #1d4ed8;
   --ring: rgba(59,130,246,.45);
+  --hero-offset: 12px;
 
   /* Stable top offset (px only — no vh). Adjust to taste. */
-  --top-gap: 96px;
+  --top-gap: 34px;
 }
 
 *{ box-sizing: border-box; }
@@ -52,9 +53,56 @@ main{
   display: flex;
   flex-direction: column;
   gap: 20px;
-  /* Make top offset STRUCTURAL, not a scrolling spacer */
+  /* Make top offset STRUCTURAL, not a scrolling spacer. */
+  /* Disable for sticky hero variant */
   padding-top: calc(var(--top-gap) + env(safe-area-inset-top, 0px));
 }
+
+/* === Sticky full-width top section === */
+.top-sticky {
+  position: sticky;
+  top: 0;                    /* pin to very top */
+  z-index: 100;              /* above page content */
+  /* full-bleed across the viewport, ignoring #root/main widths */
+  margin-inline: calc(50% - 50vw);
+  width: 100vw;
+
+  /* dark translucent background to match theme */
+  background: linear-gradient(180deg, rgba(15,23,42,0.9), rgba(10,16,32,0.7));
+  backdrop-filter: saturate(120%) blur(8px);
+  -webkit-backdrop-filter: saturate(120%) blur(8px);
+
+  border-bottom: 1px solid rgba(59,130,246,0.20);
+  box-shadow: 0 10px 30px rgba(2,6,23,0.45);
+}
+
+/* centered inner row that aligns with your main content width */
+.top-sticky__inner {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding: 10px clamp(16px, 2vw, 24px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* small helper for subtle dividers inside the sticky bar (optional) */
+.top-sticky__right {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.top-sticky__pill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+  border: 1px solid rgba(148,163,184,.25);
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* === End sticky top section === */
 
 /* ======= Sections ======= */
 .section{
@@ -130,7 +178,7 @@ main{
   transition: transform .30s ease, opacity .45s ease;
   opacity: 0; pointer-events: none;
 }
-.card:hover::after{ opacity: 1; transform: translateX(120%); }
+.card:hover::after{ opacity: 1; transform: translateX(60%); }
 
 /* ======= Typography ======= */
 h1, h2{ color:#fff; letter-spacing:.2px; margin:0 0 .5rem; }
