@@ -1,6 +1,104 @@
 // App.jsx
 import { motion } from "framer-motion";
 import Carousel from "./components/Carousel";
+// App.jsx (replace TypewriterRich and update code-titlebar markup)
+
+import { useEffect, useRef, useState } from "react";
+
+// Caret follows the typed fragment
+function TypewriterRich({ lines = [], charSpeed = 26, lineDelay = 520 }) {
+  const [progress, setProgress] = useState({ li: 0, fi: 0, ci: 0 });
+  const [done, setDone] = useState(false);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    const tick = () => {
+      const { li, fi, ci } = progress;
+      const line = lines[li] || [];
+      const frag = line[fi] || { text: "" };
+
+      if (ci < frag.text.length) {
+        setProgress({ li, fi, ci: ci + 1 });
+        timerRef.current = setTimeout(tick, charSpeed);
+      } else if (fi < line.length - 1) {
+        setProgress({ li, fi: fi + 1, ci: 0 });
+        timerRef.current = setTimeout(tick, charSpeed);
+      } else if (li < lines.length - 1) {
+        timerRef.current = setTimeout(() => {
+          setProgress({ li: li + 1, fi: 0, ci: 0 });
+        }, lineDelay);
+      } else {
+        setDone(true);
+      }
+    };
+
+    if (!done) timerRef.current = setTimeout(tick, charSpeed);
+    return () => clearTimeout(timerRef.current);
+  }, [progress, done, lines, charSpeed, lineDelay]);
+
+  const { li, fi, ci } = progress;
+
+  return (
+    <pre className="typewriter">
+      {lines.slice(0, li + 1).map((line, i) => {
+        const isCurrent = i === li;
+        return (
+          <div key={`l${i}`}>
+            {line.map((frag, idx) => {
+              // Completed fragments first
+              if (!isCurrent || idx < fi) {
+                return <span key={idx} className={frag.class || ""}>{frag.text}</span>;
+              }
+              // Active fragment: partial text + caret
+              if (idx === fi) {
+                const partial = frag.text.slice(0, ci);
+                return (
+                  <span key={idx} className={frag.class || ""}>
+                    {partial}
+                    {!done && <span className="caret" aria-hidden="true">▋</span>}
+                  </span>
+                );
+              }
+              // Future fragments on the same line: empty for now
+              return <span key={idx} />;
+            })}
+          </div>
+        );
+      })}
+    </pre>
+  );
+}
+
+function SectionDivider({ label = "Projects", leftSrc, rightSrc, id = "projects-divider" }) {
+  return (
+    <div className="full-divider" role="separator" aria-labelledby={id}>
+      {/* Side images (optional) */}
+      {leftSrc && (
+        <div
+          className="full-divider__img full-divider__img--left"
+          style={{ "--img": `url(${leftSrc})` }}
+        />
+      )}
+      {rightSrc && (
+        <div
+          className="full-divider__img full-divider__img--right"
+          style={{ "--img": `url(${rightSrc})` }}
+        />
+      )}
+
+      {/* Center scrim for guaranteed readability */}
+      <div className="full-divider__center" />
+
+      {/* Subtle animated sheen */}
+      <div className="full-divider__sheen" />
+
+      {/* Label aligned to main content width */}
+      <div className="full-divider__inner">
+        <span id={id} className="full-divider__label">{label}</span>
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   return (
@@ -21,21 +119,69 @@ export default function App() {
 
     <main style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
 
-      {/* Hero (no whileInView to avoid resize re-triggers) */}
-      <motion.section
-        className="section section--hero"
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <h1 className="gradient-text">Hi, I’m Albert</h1>
-        <p style={{ color: "var(--muted)", margin: 0 }}>Test1.</p>
+    {/* HERO — two-column: left code window + right image */}
+<motion.section
+  className="section section--hero"
+  initial={{ opacity: 0, y: 16 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+>
+  <div className="hero-grid">
+    {/* LEFT – code window */}
+      <div className="hero-left hero-code">
+        <div className="code-window">
+    <div className="code-titlebar">
+      <span className="code-title">Example.jsx</span>
+      <div className="code-dots">
+      <span className="code-dot code-dot--green" />
+      <span className="code-dot code-dot--amber" />
+      <span className="code-dot code-dot--red" />
+      </div>
+    </div>
 
-        <div className="btn-row" style={{ marginTop: ".85rem" }}>
-          <a className="btn btn--primary" href="https://github.com/Albertdmo13" target="_blank" rel="noreferrer">GitHub</a>
-          <a className="btn btn--ghost" href="https://www.linkedin.com/in/tu-perfil" target="_blank" rel="noreferrer">LinkedIn</a>
+        <div className="code-body">
+          <TypewriterRich
+            charSpeed={24}
+            lineDelay={480}
+            lines={[
+              [{ text:"// ", class:"cm" }, { text:"Welcome to my code!", class:"cm" }],
+              [{ text:"function ", class:"kw" }, { text:"greet", class:"fn" }, { text:"() {", class:"op" }],
+              [{ text:"  console.", class:"var" }, { text:"log", class:"fn" }, { text:"(", class:"op" }, { text:"'Hello, world!'", class:"str" }, { text:");", class:"op" }],
+              [{ text:"}", class:"op" }],
+              [{ text:"greet", class:"fn" }, { text:"();", class:"op" }],
+            ]}
+            />
         </div>
-      </motion.section>
+        </div>
+      </div>
+
+      {/* RIGHT – image spans both rows */}
+    <div className="hero-right hero-img-wrap">
+      <div className="hero-card">
+        <img
+          className="hero-img"
+          src="https://picsum.photos/1000/800?random=900&blur=0"
+          alt="Placeholder portrait"
+        />
+      </div>
+    </div>
+
+    {/* LEFT – CTAs in row 2 */}
+    <div className="hero-left hero-cta">
+      <div className="btn-row">
+        <a className="btn btn--primary" href="https://github.com/Albertdmo13" target="_blank" rel="noreferrer">GitHub</a>
+        <a className="btn btn--ghost" href="https://www.linkedin.com/in/tu-perfil" target="_blank" rel="noreferrer">LinkedIn</a>
+      </div>
+    </div>
+  </div>
+</motion.section>
+
+
+    <SectionDivider
+      label="Projects"
+      leftSrc="https://picsum.photos/1200/480?random=301"
+      rightSrc="https://picsum.photos/1200/480?random=302"
+    />
 
       {/* Projects 1 */}
       <motion.section
