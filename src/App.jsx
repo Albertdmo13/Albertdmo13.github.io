@@ -5,6 +5,102 @@ import Carousel from "./components/Carousel";
 
 import { useEffect, useRef, useState } from "react";
 
+function ShrinkingTitle({
+  title = "ALBERTDMO",
+  subtitle = "Subtitle.",
+  ctaLabel = "Explore projects",
+  ctaHref = "#projects-1"
+}) {
+  const groupRef = useRef(null);
+  const [canClick, setCanClick] = useState(true); // button enabled at start
+
+  useEffect(() => {
+    let rafId;
+    let lastW = window.innerWidth;
+    let lastH = window.innerHeight;
+
+    const measurePinTop = () => {
+      const el = groupRef.current;
+      if (!el) return;
+
+      const sticky = document.querySelector(".top-sticky");
+      const stickyBottom = sticky ? sticky.getBoundingClientRect().bottom : 0;
+      const EXTRA_GAP = 48; // more breathing room below the sticky bar
+
+      const rect = el.getBoundingClientRect();
+      const pinTop = Math.max(rect.top, stickyBottom + EXTRA_GAP);
+      el.style.setProperty("--pin-top", `${pinTop}px`);
+    };
+
+    const CLICK_T_THRESHOLD = 0.02; // tolerance for scroll before disabling button
+
+    const tick = () => {
+      const el = groupRef.current;
+      if (!el) { rafId = requestAnimationFrame(tick); return; }
+
+      const wrap = el.parentElement; // .hero-title-wrap
+      const rect = wrap.getBoundingClientRect();
+      const h = Math.max(rect.height, 1);
+      const t = Math.min(Math.max(-rect.top / h, 0), 1);
+
+      // Shared animation values
+      const scale = 1 - t * 0.45;      // shrink effect
+      const opacity = 1 - t * 1.1;     // fade out faster
+      const blur = t * 8;              // max ~8px blur
+
+      el.style.setProperty("--shrink-scale", scale.toFixed(3));
+      el.style.setProperty("--shrink-opacity", Math.max(opacity, 0).toFixed(3));
+      el.style.setProperty("--shrink-blur", `${blur.toFixed(2)}px`);
+
+      // Enable button only if title is basically fully visible
+      const clickable = t <= CLICK_T_THRESHOLD;
+      setCanClick(clickable);
+
+      rafId = requestAnimationFrame(tick);
+    };
+
+    measurePinTop();
+    rafId = requestAnimationFrame(tick);
+
+    const onResize = () => {
+      if (Math.abs(window.innerWidth - lastW) > 2 || Math.abs(window.innerHeight - lastH) > 2) {
+        lastW = window.innerWidth;
+        lastH = window.innerHeight;
+        measurePinTop();
+      }
+    };
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
+
+  return (
+    <div className="hero-title-wrap">
+      <div ref={groupRef} className="hero-group" role="banner" aria-label="Hero">
+        <h1 className="hero-title" aria-label={title}>{title}</h1>
+        <p className="hero-subtitle">{subtitle}</p>
+
+        <div className="hero-left">
+          <a
+            className={`btn btn--primary ${!canClick ? "is-disabled" : ""}`}
+            href={canClick ? ctaHref : undefined}        // prevent navigation when disabled
+            onClick={(e) => { if (!canClick) e.preventDefault(); }}
+            tabIndex={canClick ? 0 : -1}                 // skip in keyboard navigation
+            aria-disabled={!canClick}
+            style={{ pointerEvents: canClick ? "auto" : "none" }} // block events when disabled
+          >
+            {ctaLabel}
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 // Caret follows the typed fragment
 function TypewriterRich({ lines = [], charSpeed = 26, lineDelay = 520 }) {
   const [progress, setProgress] = useState({ li: 0, fi: 0, ci: 0 });
@@ -117,7 +213,9 @@ export default function App() {
         </div>
       </section>
 
-    <main style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+    <ShrinkingTitle />
+
+    <main className="content-over" style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
 
     {/* HERO — two-column: left code window + right image */}
 <motion.section
@@ -160,7 +258,7 @@ export default function App() {
       <div className="hero-card">
         <img
           className="hero-img"
-          src="https://picsum.photos/1000/800?random=900&blur=0"
+          src="https://picsum.photos/1000/800?random=900"
           alt="Placeholder portrait"
         />
       </div>
